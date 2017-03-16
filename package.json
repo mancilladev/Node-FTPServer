@@ -1,0 +1,14 @@
+{
+  "name": "FTPServer",
+  "version": "1.0.0",
+  "main": "server.js",
+  "author": "Diego Said Anaya Mancilla",
+  "license": "None",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "fs-extra": "^2.0.0",
+    "ftp": "^0.3.10",
+    "ftp-server": "^0.1.0",
+    "net": "^1.0.2"
+  }
+}
