@@ -4,15 +4,14 @@ const net = require('net')
 const path = require('path')
 const spawn = require('child_process').spawn
 
+
 const PORT = 1337
 let curDir = __dirname
 let sockets = []
 let _data = ''
 let _clientAddress = null
 let _clientPort = null
-//
-// speedtest.tele2.net
-//
+
 
 function run_cmd(cmd, args, callBack ) {
     return new Promise(function(resolve, reject) {
@@ -31,10 +30,6 @@ _completePath = (directory = '') => {
 
 downloadFile = (filename) => {
     return fs.readFileSync(_completePath(filename))
-}
-
-downloadMutlipleFiles = (socket, files) => {
-    files.forEach(file => downloadFile(socket, file))
 }
 
 changeCurDir = (directory) => {
@@ -57,12 +52,6 @@ changeCurDir = (directory) => {
             }
         })
     })
-}
-
-
-
-showDirContents = (dir) => {
-    return fs.readdirSync(dir).join('\r\n')
 }
 
 _remove = file => {
@@ -235,23 +224,24 @@ commands = exports.commands = {
         _clientPort = info[4]*256 + info[5]
         this.reply(202)
     },
-    "STOR": function (target) {
-        this.receiveFile(target)
+    "STOR": function (...name) {
+        console.log('Receiving: ', name.join(' '))
+        this.receiveFile(name.join(' '))
     },
-    "RETR": function (target) {
+    "RETR": function (...name) {
         this.dataTransfer(function () {
-            return downloadFile(target || _completePath())
+            return downloadFile(name.join(' ') || _completePath())
         })
     },
-    "MKD": function (dir) {
-        fs.mkdirSync(_completePath(dir))
-        this.reply(257, dir)
+    "MKD": function (...name) {
+        fs.mkdirSync(_completePath(name.join(' ')))
+        this.reply(257, name.join(' '))
     },
-    "RMD": function (target) {
-        deleteEmptyDir(target).then(code => this.reply(code))
+    "RMD": function (...name) {
+        deleteEmptyDir(name.join(' ')).then(code => this.reply(code))
     },
-    "DELE": function (dir) {
-        fs.removeSync(_completePath(dir))
+    "DELE": function (...name) {
+        fs.removeSync(_completePath(name.join(' ')))
         this.reply(213, 'Succesfully deleted file.')
     },
     "LIST": function (target) {
@@ -266,8 +256,8 @@ commands = exports.commands = {
     "PWD": function () {
         this.reply(212, '"' + _completePath() + '"')
     },
-    "CWD": function (target) {
-        changeCurDir(target).then((response) => {
+    "CWD": function (...name) {
+        changeCurDir(name.join(' ')).then((response) => {
             this.reply(response.code, response.message)
         })
     },
