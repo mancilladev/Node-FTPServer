@@ -228,7 +228,18 @@ commands = exports.commands = {
         console.log('Receiving: ', name.join(' '))
         this.receiveFile(name.join(' '))
     },
+    /* TODO: Delete this function */
+    "PUT": function (...name) {
+        console.log('Receiving: ', name.join(' '))
+        this.receiveFile(name.join(' '))
+    },
     "RETR": function (...name) {
+        this.dataTransfer(function () {
+            return downloadFile(name.join(' ') || _completePath())
+        })
+    },
+    /* TODO: Delete this function */
+    "GET": function (...name) {
         this.dataTransfer(function () {
             return downloadFile(name.join(' ') || _completePath())
         })
@@ -240,7 +251,16 @@ commands = exports.commands = {
     "RMD": function (...name) {
         deleteEmptyDir(name.join(' ')).then(code => this.reply(code))
     },
+    /* TODO: Delete this function */
+    "RMD": function (...name) {
+        deleteEmptyDir(name.join(' ')).then(code => this.reply(code))
+    },
     "DELE": function (...name) {
+        fs.removeSync(_completePath(name.join(' ')))
+        this.reply(213, 'Succesfully deleted file.')
+    },
+    /* TODO: Delete this function */
+    "DELETE": function (...name) {
         fs.removeSync(_completePath(name.join(' ')))
         this.reply(213, 'Succesfully deleted file.')
     },
@@ -257,6 +277,12 @@ commands = exports.commands = {
         this.reply(212, '"' + _completePath() + '"')
     },
     "CWD": function (...name) {
+        changeCurDir(name.join(' ')).then((response) => {
+            this.reply(response.code, response.message)
+        })
+    },
+    /* TODO: Delete this function */
+    "CD": function (...name) {
         changeCurDir(name.join(' ')).then((response) => {
             this.reply(response.code, response.message)
         })
