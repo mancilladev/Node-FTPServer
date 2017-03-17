@@ -5,7 +5,7 @@ const path = require('path')
 const spawn = require('child_process').spawn
 
 const PORT = 1337
-let curDir = path.join(__dirname, 'files/')
+let curDir = __dirname
 let sockets = []
 let _data = ''
 let _clientAddress = null
@@ -14,19 +14,23 @@ let _clientPort = null
 // speedtest.tele2.net
 //
 
+function run_cmd(cmd, args, callBack ) {
+    return new Promise(function(resolve, reject) {
+        var spawn = require('child_process').spawn
+        var child = spawn(cmd, args)
+        var resp = ""
+
+        child.stdout.on('data', function (buffer) { resp += buffer.toString() })
+        child.stdout.on('end', function() { resolve (resp) })
+    })
+}
+
 _completePath = (directory = '') => {
     return path.join(curDir, directory)
 }
 
-fs.readFileAsync = (path) => {
-    return new Promise((resolve, reject) => {
-        fs.readFile(path, (err, data) => {
-            if (err) 
-                reject(err)
-            else 
-                resolve(data)
-        })
-    })
+downloadFile = (filename) => {
+    return fs.readFileSync(_completePath(filename))
 }
 
 downloadMutlipleFiles = (socket, files) => {
@@ -35,15 +39,18 @@ downloadMutlipleFiles = (socket, files) => {
 
 changeCurDir = (directory) => {
      return new Promise(function(resolve, reject) {
-        fs.stat(_completePath(directory), (err, data) => {
+        if (directory.split('/').length == 1) {directory = _completePath(directory)}
+        fs.stat(directory, (err, data) => {
             if (err) {
+                console.log(err, directory)
                 resolve({code: 450, message: 'Error in path\r\n'})
             }
             else if (!data.isDirectory()) {
                 resolve({code: 450, message: 'Path is not a directory\r\n'})
             }
             else {
-                curDir = _completePath(directory)
+                curDir = directory
+                console.log(curDir)
                 resolve({code: 212,
                     message: 'Succesfully changed directory\r\n'
                 })
@@ -52,69 +59,31 @@ changeCurDir = (directory) => {
     })
 }
 
+
+
 showDirContents = (dir) => {
-    console.log('WTF')
-    console.log(fs.readdirSync(dir).map(f => {
-        return (f.indexOf('.') === 1) ? dir + '/' : dir
-    }).join('\r\n'))
-    return fs.readdirSync(dir).map(f => {
-        return (f.indexOf('.') === 1) ? dir + '/' : dir
-    }).join('\r\n')
+    return fs.readdirSync(dir).join('\r\n')
 }
 
 _remove = file => {
-    fs.remove(_completePath(file), err => {
-        if (err) return console.error(err)
-
-        socket.write('Succesfully removed: ' + file + '\n')
-    })
+    fs.removeSync(_completePath(file))
 }
 
-deleteFile = (socket, args) => {
-    if (args.length === 1) {
-        file = args[0]
-    }
-    else if (args.length === 2) {
-        file = args[1]
-    }
-    else {
-        socket.write('Invalid number of arguments.\n')
-        return console.error(err)
-    }
-
-    fs.stat(_completePath(file), (err, stats) => {
-        if (err) {
-            socket.write('Not found!\n')
-        }
-        else if (!stats.isDirectory() || (stats.isDirectory() && args[0] === '-R')) {
-            _remove(file)
-        }
-        else {
-            socket.write('Invalid arguments. \
-                Argument -R required to delete a directory\n'
-            )
-        }
-    })
-}
-
-deleteEmptyDir = (socket, directory) => {
-    fs.readdir(_completePath(directory), (err, files) => {
-        if (err) {
-            socket.write('Directory not found\n')
-        }
-        else {
-            if (!files.length) {
+deleteEmptyDir = (directory) => {
+    return new Promise(function(resolve, reject) {
+            fs.readdir(_completePath(directory), (err, files) => {
+            if (err) {
+                resolve(450)
+            }
+            if (!files || !files.length) {
                 _remove(directory)
+                resolve(212)
             }
             else {
-                // 10066
+                resolve(10066)
             }
-        }
+        })
     })
-}
-
-showCurrentLocation = socket => {
-    socket.write(_completePath() + '\n')
 }
 
 
@@ -147,6 +116,13 @@ newSocket = socket => {
         }
         dataSocket = net.createConnection(_clientPort, _clientAddress)
         dataSocket.on('connect', execute)
+    }
+
+    socket.receiveFile = function (filename) {
+        dataSocket = net.createConnection(_clientPort, _clientAddress)
+        socket.reply(150)
+        dataSocket.pipe(fs.createWriteStream(_completePath(filename)))
+        dataSocket.on('end', () => socket.reply(226))
     }
 
     socket.close = function () {
@@ -259,22 +235,39 @@ commands = exports.commands = {
         _clientPort = info[4]*256 + info[5]
         this.reply(202)
     },
-    "LIST": function (target) {
-        this.dataTransfer(function () {
-            return showDirContents(target || _completePath())
-        })
+    "STOR": function (target) {
+        this.receiveFile(target)
     },
     "RETR": function (target) {
         this.dataTransfer(function () {
             return downloadFile(target || _completePath())
         })
     },
+    "MKD": function (dir) {
+        fs.mkdirSync(_completePath(dir))
+        this.reply(257, dir)
+    },
+    "RMD": function (target) {
+        deleteEmptyDir(target).then(code => this.reply(code))
+    },
+    "DELE": function (dir) {
+        fs.removeSync(_completePath(dir))
+        this.reply(213, 'Succesfully deleted file.')
+    },
+    "LIST": function (target) {
+        run_cmd( "ls", ["-l", _completePath()]).then(text => {
+            lines = text.split('\n')
+            result = lines.slice(1, lines.length).join('\r\n')
+            this.dataTransfer(function () {
+                return result
+            })
+        })
+    },
     "PWD": function () {
-        this.reply(257, '"' + _completePath() + '"')
+        this.reply(212, '"' + _completePath() + '"')
     },
     "CWD": function (target) {
         changeCurDir(target).then((response) => {
-            console.log('Changed dir: ', curDir)
             this.reply(response.code, response.message)
         })
     },
