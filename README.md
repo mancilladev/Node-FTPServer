@@ -7,6 +7,7 @@ The server can receive, send, create, list and delete files/directories.
 Notice that sending directories may cause (not yet handled) errors.
 
 The server was manually tested with FileZilla client app.
+The connection **needs** to be ftp (insecure) active. Future updates will take care of security.
 
 
 ## List of accepted commands
