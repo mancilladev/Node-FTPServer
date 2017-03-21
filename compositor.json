@@ -1,0 +1,85 @@
+{
+  "name": "mancilladev/Node-FTPServer",
+  "version": "0.1.4",
+  "libraries": {
+    "xv": "^1.1.25"
+  },
+  "title": "",
+  "branch": "",
+  "style": {
+    "name": "Williamsburg",
+    "componentSet": {
+      "nav": "nav/BasicNav",
+      "header": "header/LightBannerHeader",
+      "article": "article/ReaderArticle",
+      "footer": "footer/BasicFooter"
+    },
+    "fontFamily": "Montserrat, sans-serif",
+    "heading": {
+      "fontWeight": 600,
+      "letterSpacing": "0.1em"
+    },
+    "colors": {
+      "text": "#346",
+      "background": "#fff",
+      "primary": "#0099e0",
+      "secondary": "#ab61ff",
+      "highlight": "#f7b",
+      "muted": "#fffab3",
+      "border": "#ccd"
+    }
+  },
+  "content": [
+    {
+      "component": "nav",
+      "links": [
+        {
+          "href": "https://github.com/mancilladev/Node-FTPServer",
+          "text": "GitHub"
+        },
+        {
+          "href": "https://npmjs.com/package/FTPServer",
+          "text": "npm"
+        }
+      ]
+    },
+    {
+      "component": "header",
+      "heading": "Node-FTPServer",
+      "subhead": "A dummy Node.js FTP Server for learning about distributed systems",
+      "children": [
+        {
+          "component": "ui/TweetButton",
+          "text": "Node-FTPServer: A dummy Node.js FTP Server for learning about distributed systems",
+          "url": null
+        },
+        {
+          "component": "ui/GithubButton",
+          "user": "mancilladev",
+          "repo": "Node-FTPServer"
+        }
+      ],
+      "text": "v1.0.0"
+    },
+    {
+      "component": "article",
+      "metadata": {
+        "source": "github.readme"
+      },
+      "html": "<h1>Node.js Dummy FTP Server</h1>\n<p>This is an <strong>FTP Server</strong> made with Node.js for a course project in Distributed Systems.\nThe code needs some cleaning and revisions.</p>\n<p>The server can receive, send, create, list and delete files/directories.\nNotice that sending directories may cause (not yet handled) errors.</p>\n<p>The server was manually tested with FileZilla client app.\nThe connection <strong>needs</strong> to be ftp (insecure) active. Future updates will take care of security.</p>\n<h2>List of accepted commands</h2>\n<ul>\n<li>USER</li>\n<li>PASS</li>\n<li>SYST</li>\n<li>FEAT</li>\n<li>TYPE</li>\n<li>PORT</li>\n<li>STOR</li>\n<li>RETR</li>\n<li>MKD</li>\n<li>RMD</li>\n<li>DELE</li>\n<li>LIST</li>\n<li>PWD</li>\n<li>CWD</li>\n<li>CLOSE</li>\n</ul>\n"
+    },
+    {
+      "component": "footer",
+      "links": [
+        {
+          "href": "https://github.com/mancilladev/Node-FTPServer",
+          "text": "GitHub"
+        },
+        {
+          "href": "https://github.com/mancilladev",
+          "text": "mancilladev"
+        }
+      ]
+    }
+  ]
+}
